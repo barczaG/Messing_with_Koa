@@ -1,0 +1,16 @@
+{
+  "name": "Koa_login",
+  "version": "0.0.1",
+  "description": "Basic API with Koa and Bookshelf",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "author": "Zekany",
+  "license": "ISC",
+  "dependencies": {
+    "bookshelf": "^0.10.3",
+    "knex": "^0.12.6",
+    "koa": "^1.2.4"
+  }
+}
