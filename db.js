@@ -1,6 +1,4 @@
-
-let exports = module.exports = {}
-let dbConfig = {
+module.exports = {
   client: 'pg',
   connection: {
     host: 'localhost',
@@ -11,4 +9,4 @@ let dbConfig = {
   }
 }
 
-exports.dbConfig
+
