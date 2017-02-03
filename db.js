@@ -1,6 +1,7 @@
 
-let exports = module.exports = {}
-let dbConfig = {
+// Obsolete, uninstall bookshelf
+/*
+module.exports = {
   client: 'pg',
   connection: {
     host: 'localhost',
@@ -10,5 +11,4 @@ let dbConfig = {
     charset: 'utf8'
   }
 }
-
-exports.dbConfig
+*/

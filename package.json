@@ -9,8 +9,12 @@
   "author": "Zekany",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.0",
     "bookshelf": "^0.10.3",
     "knex": "^0.12.6",
-    "koa": "^1.2.4"
+    "koa": "^1.2.4",
+    "pg": "^6.1.2",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^3.30.1"
   }
 }
