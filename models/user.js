@@ -1,8 +1,8 @@
 
-// Fix this
-// let dbConfig = require('./db')
 let Sequelize = require('sequelize')
-let connection = new Sequelize('test', process.env.DB_HOST, process.env.DB_PASSWORD)
+let connection = new Sequelize('test', process.env.DB_HOST, process.env.DB_PASSWORD, {
+  dialect: 'postgres'
+})
 let bcrypt = require('bcryptjs')
 
 let User = connection.define('user', {
@@ -13,28 +13,30 @@ let User = connection.define('user', {
   },
   password: {
     type: Sequelize.STRING,
-    allowNull: false,
-    validate: {
-      // Revisit this when I understand bcrypt better
-      len: [8, 255],
-      message: 'Your password is too short'
-    }
+    allowNull: false
   }
 }, {
+  instanceMethods: {
+    validPassword: function (password) {
+      return bcrypt.compareSync(password, this.password)
+    }
+  },
   hooks: {
-    afterCreate: function (res) {
-      console.log('afterCreate: Created article with id ', res.dataValues.id)
-    },
     afterValidate: function (user) {
-      user.password = bcrypt.hashSync(user.password, 8)
+      // Async implementation
+      return bcrypt.hash(user.password, 7).then(function (hash) {
+        return user.password = hash
+      })
     }
   }
 })
-// Teszthez?
+
+// Teszthez
+// Production előtt kitörölni
 User.sync({force: true}).then(function () {
   // Table created
   return User.create({
-    username: 'username',
-    password: 'password'
+    username: 'testUser',
+    password: 'testPass'
   })
 })
