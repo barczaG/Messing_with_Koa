@@ -5,28 +5,32 @@ let connection = new Sequelize('test', process.env.DB_HOST, process.env.DB_PASSW
 })
 let bcrypt = require('bcryptjs')
 
-let User = connection.define('user', {
-  username: {
+const User = sequelize.define('user', {
+  email: {
     type: Sequelize.STRING,
     unique: true,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      isEmail: true
+    }
   },
   password: {
     type: Sequelize.STRING,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      notEmpty: true // added after API accepted empty input, not sure if needed
+    }
   }
 }, {
-  instanceMethods: {
-    validPassword: function (password) {
-      return bcrypt.compareSync(password, this.password)
-    }
-  },
   hooks: {
     afterValidate: function (user) {
       // Async implementation
-      return bcrypt.hash(user.password, 7).then(function (hash) {
-        return user.password = hash
-      })
+      if (user.password.length >= 6) { // added when API accepted empty input for password, not sure if needed
+        return bcrypt.hash(user.password, 7).then(function (hash) {
+          user.password = hash
+          return user
+        })
+      }
     }
   }
 })
