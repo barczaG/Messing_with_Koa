@@ -3,6 +3,7 @@ const route = require('koa-route')
 const parse = require('co-body')
 const koa = require('koa')
 const app = koa()
+const router = require('koa-router')()
 
 const Promise = require('bluebird')
 const jwt = require('koa-jwt')
@@ -13,17 +14,27 @@ const dbHost = process.env.DB_HOST || 'localhost:5432'
 const dbName = process.env.DB_NAME || 'ioffice'
 const dbUser = process.env.DB_USER || 'ioffice'
 const dbPassword = process.env.DB_PASSWORD
-if (!dbPassword) throw new Error('Missing db password')
+const dbUri = process.env.DB_URI
+if (!dbPassword && !dbUri) throw new Error('Missing db password')
+
+const jwtSecret = process.env.SECRET_KEY || 'random-secret'
 
 const Sequelize = require('sequelize')
-const conStr = `postgres://${dbUser}:${dbPassword}@${dbHost}/${dbName}`
+const conStr = dbUri || `postgres://${dbUser}:${dbPassword}@${dbHost}/${dbName}`
 const sequelize = new Sequelize(conStr)
 
 app.use(logger())
 
-app.use(route.post('/api/register', register))
-app.use(route.post('/api/login', login))
-app.use(route.post('/api/protect', jwt({secret: 'ioffice'}), protect))
+router.post('/api/register', register)
+router.post('/api/login', login)
+router.post('/api/protect', jwt({secret: jwtSecret}), protect)
+app
+.use(router.routes())
+.use(router.allowedMethods())
+
+// app.use(route.post('/api/register', register))
+// app.use(route.post('/api/login', login))
+// app.use(route.post('/api/protect', jwt({secret: jwtSecret}), protect))
 
 function * register () {
   const body = yield parse(this)
@@ -76,7 +87,7 @@ function * login () {
   if (!user) this.throw(400, 'User not found')
   const compare = yield bcrypt.compare(body.password, user.password)
   if (!compare) this.throw(400, 'Invalid password')
-  let token = jsonwebtoken.sign({user: user.id}, process.env.SECRET_KEY)
+  let token = jsonwebtoken.sign({user: user.id}, jwtSecret)
   //jwt.sign({ user: user }, process.env.SECRET_KEY, { algorithm: 'RS256' }, function (err, token) {
   //  console.log(token)
   //})
