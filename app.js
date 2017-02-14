@@ -3,9 +3,10 @@ const route = require('koa-route')
 const parse = require('co-body')
 const koa = require('koa')
 const app = koa()
-const co = require('co')
 
-const jwt = require('jsonwebtoken')
+const Promise = require('bluebird')
+const jwt = require('koa-jwt')
+const jsonwebtoken = Promise.promisifyAll(require('jsonwebtoken'))
 let bcrypt = require('bcryptjs')
 
 const dbHost = process.env.DB_HOST || 'localhost:5432'
@@ -22,7 +23,7 @@ app.use(logger())
 
 app.use(route.post('/api/register', register))
 app.use(route.post('/api/login', login))
-app.use(route.post('/api/protect', jwt, protect))
+app.use(route.post('/api/protect', jwt({secret: 'ioffice'}), protect))
 
 function * register () {
   const body = yield parse(this)
@@ -75,15 +76,21 @@ function * login () {
   if (!user) this.throw(400, 'User not found')
   const compare = yield bcrypt.compare(body.password, user.password)
   if (!compare) this.throw(400, 'Invalid password')
-  let token = jwt.sign({user: user}, process.env.SECRET_KEY)
+  let token = jsonwebtoken.sign({user: user.id}, process.env.SECRET_KEY)
   //jwt.sign({ user: user }, process.env.SECRET_KEY, { algorithm: 'RS256' }, function (err, token) {
   //  console.log(token)
   //})
+  /*
+  jsonwebtoken.signAsync({user: user.id}, process.env.SECRET_KEY,
+    { algorithm: 'RS256'}).then(function (token) {
+
+    })*/
   this.body = token
 }
 
 function * protect () {
-  this.body('Jwt worked')
+  this.body = 'Jwt worked'
+  console.log('????')
 }
 
 const User = sequelize.define('user', {
